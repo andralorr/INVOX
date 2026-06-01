@@ -16,6 +16,7 @@ import invox.service.ProductService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -27,6 +28,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 import java.time.LocalDate;
@@ -41,7 +43,9 @@ public class InvoicesView extends BorderPane {
     private final User currentUser;
 
     private final ObservableList<Invoice> invoices = FXCollections.observableArrayList();
-    private final TableView<Invoice> table = new TableView<>(invoices);
+    private final FilteredList<Invoice> filtered = new FilteredList<>(invoices, inv -> true);
+    private final TableView<Invoice> table = new TableView<>(filtered);
+    private final TextField searchField = new TextField();
 
     private final ComboBox<Client> clientCombo = new ComboBox<>();
     private final TextField seriesField = new TextField("INV");
@@ -69,10 +73,29 @@ public class InvoicesView extends BorderPane {
         this.productService = productService;
         this.currentUser = currentUser;
         buildTable();
-        setCenter(table);
+        searchField.setPromptText("Cauta dupa serie-numar, client sau id...");
+        searchField.textProperty().addListener((obs, oldV, newV) -> applyFilter(newV));
+        VBox center = new VBox(8, searchField, table);
+        VBox.setVgrow(table, Priority.ALWAYS);
+        center.setPadding(new Insets(12));
+        setCenter(center);
         setRight(buildForm());
         setBottom(buildActions());
         reload();
+    }
+
+    private void applyFilter(String query) {
+        String s = query == null ? "" : query.trim().toLowerCase();
+        filtered.setPredicate(inv -> {
+            if (s.isEmpty()) {
+                return true;
+            }
+            String serieNumar = (inv.getSeries() == null ? "" : inv.getSeries()) + "-" + inv.getNumber();
+            String client = clientName(inv.getClient());
+            return serieNumar.toLowerCase().contains(s)
+                    || String.valueOf(inv.getId()).contains(s)
+                    || (client != null && client.toLowerCase().contains(s));
+        });
     }
 
     private void buildTable() {
@@ -143,7 +166,7 @@ public class InvoicesView extends BorderPane {
         VBox box = new VBox(10, new Label("Factura noua"), grid, addLineBtn,
                 new Label("Linii:"), cartTable, removeLineBtn, issueBtn);
         box.setPadding(new Insets(12));
-        box.setPrefWidth(400);
+        box.setPrefWidth(440);
         box.getStyleClass().add("card");
         return box;
     }

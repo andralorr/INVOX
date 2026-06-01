@@ -8,6 +8,7 @@ import invox.service.ClientService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -18,6 +19,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 public class ClientsView extends BorderPane {
@@ -25,10 +27,12 @@ public class ClientsView extends BorderPane {
     private final ClientService clientService;
 
     private final ObservableList<Client> clients = FXCollections.observableArrayList();
-    private final TableView<Client> table = new TableView<>(clients);
+    private final FilteredList<Client> filtered = new FilteredList<>(clients, c -> true);
+    private final TableView<Client> table = new TableView<>(filtered);
+    private final TextField searchField = new TextField();
 
     private final ComboBox<String> typeCombo = new ComboBox<>(
-            FXCollections.observableArrayList("Persoana juridica", "Persoana fizica"));
+            FXCollections.observableArrayList("Firma", "Persoana fizica"));
 
     // comune
     private final TextField email = new TextField();
@@ -36,13 +40,13 @@ public class ClientsView extends BorderPane {
     private final TextField address = new TextField();
     private final TextField city = new TextField();
     private final TextField county = new TextField();
-    // persoana juridica
+    // firma
     private final TextField companyName = new TextField();
     private final TextField cui = new TextField();
     private final TextField regCom = new TextField();
     private final TextField iban = new TextField();
     private final TextField bank = new TextField();
-    // persoana fizica
+    // persoana
     private final TextField firstName = new TextField();
     private final TextField lastName = new TextField();
     private final TextField cnp = new TextField();
@@ -50,13 +54,38 @@ public class ClientsView extends BorderPane {
     public ClientsView(ClientService clientService) {
         this.clientService = clientService;
         buildTable();
-        setCenter(table);
+        searchField.setPromptText("Cauta dupa nume, email sau id...");
+        searchField.textProperty().addListener((obs, oldV, newV) -> applyFilter(newV));
+        VBox center = new VBox(8, searchField, table);
+        VBox.setVgrow(table, Priority.ALWAYS);
+        center.setPadding(new Insets(12));
+        setCenter(center);
         setRight(buildForm());
         reload();
     }
 
+    private void applyFilter(String query) {
+        String s = query == null ? "" : query.trim().toLowerCase();
+        filtered.setPredicate(c -> {
+            if (s.isEmpty()) {
+                return true;
+            }
+            String name;
+            if (c instanceof CompanyClient company) {
+                name = company.getCompanyName();
+            } else if (c instanceof IndividualClient ind) {
+                name = ind.getFirstName() + " " + ind.getLastName();
+            } else {
+                name = "";
+            }
+            return (name != null && name.toLowerCase().contains(s))
+                    || (c.getEmail() != null && c.getEmail().toLowerCase().contains(s))
+                    || String.valueOf(c.getId()).contains(s);
+        });
+    }
+
     private void buildTable() {
-        addCol("Tip", c -> c instanceof CompanyClient ? "Persoana juridica" : "Persoana fizica");
+        addCol("Tip", c -> c instanceof CompanyClient ? "Firma" : "Persoana");
         addCol("Nume / Denumire", this::displayName);
         addCol("Email", Client::getEmail);
         addCol("Localitate", Client::getCity);

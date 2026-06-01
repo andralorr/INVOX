@@ -8,6 +8,7 @@ import invox.service.ProductService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -19,6 +20,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 public class ProductsView extends BorderPane {
@@ -27,7 +29,9 @@ public class ProductsView extends BorderPane {
     private final CategoryService categoryService;
 
     private final ObservableList<Product> products = FXCollections.observableArrayList();
-    private final TableView<Product> table = new TableView<>(products);
+    private final FilteredList<Product> filtered = new FilteredList<>(products, p -> true);
+    private final TableView<Product> table = new TableView<>(filtered);
+    private final TextField searchField = new TextField();
 
     private final TextField codeField = new TextField();
     private final TextField nameField = new TextField();
@@ -41,9 +45,26 @@ public class ProductsView extends BorderPane {
         this.productService = productService;
         this.categoryService = categoryService;
         buildTable();
-        setCenter(table);
+        searchField.setPromptText("Cauta dupa cod, nume sau id...");
+        searchField.textProperty().addListener((obs, oldV, newV) -> applyFilter(newV));
+        VBox center = new VBox(8, searchField, table);
+        VBox.setVgrow(table, Priority.ALWAYS);
+        center.setPadding(new Insets(12));
+        setCenter(center);
         setRight(buildForm());
         reload();
+    }
+
+    private void applyFilter(String query) {
+        String s = query == null ? "" : query.trim().toLowerCase();
+        filtered.setPredicate(p -> {
+            if (s.isEmpty()) {
+                return true;
+            }
+            return (p.getName() != null && p.getName().toLowerCase().contains(s))
+                    || (p.getCode() != null && p.getCode().toLowerCase().contains(s))
+                    || String.valueOf(p.getId()).contains(s);
+        });
     }
 
     private void buildTable() {
@@ -92,15 +113,11 @@ public class ProductsView extends BorderPane {
         Button newCatBtn = new Button("Categorie noua");
         newCatBtn.setOnAction(e -> onNewCategory());
 
-        addBtn.setMaxWidth(Double.MAX_VALUE);
-        editBtn.setMaxWidth(Double.MAX_VALUE);
-        deleteBtn.setMaxWidth(Double.MAX_VALUE);
-        newCatBtn.setMaxWidth(Double.MAX_VALUE);
         VBox buttons = new VBox(8, addBtn, editBtn, deleteBtn, newCatBtn);
 
         VBox box = new VBox(10, new Label("Produs nou"), grid, buttons);
         box.setPadding(new Insets(12));
-        box.setPrefWidth(400);
+        box.setPrefWidth(440);
         box.getStyleClass().add("card");
         return box;
     }
