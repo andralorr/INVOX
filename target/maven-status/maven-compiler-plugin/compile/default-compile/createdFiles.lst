@@ -33,6 +33,7 @@ invox\repository\InMemoryProductRepository.class
 invox\ui\ProductDetailDialog.class
 invox\repository\ClientJdbcRepository.class
 invox\repository\CategoryJdbcRepository.class
+invox\repository\ProductRepository.class
 invox\repository\InvoiceRepository.class
 invox\repository\ClientRepository.class
 invox\repository\InvoiceItemJdbcRepository.class
@@ -53,6 +54,7 @@ invox\model\CompanyClient.class
 invox\model\InvoiceItem.class
 invox\model\IndividualClient.class
 invox\ui\InvoicesView$1.class
+invox\repository\CategoryRepository.class
 invox\ui\SettingsView.class
 invox\utils\PasswordHasher.class
 invox\model\Category.class

@@ -4,22 +4,25 @@ import invox.exception.EntityNotFoundException;
 import invox.exception.InsufficientStockException;
 import invox.model.Category;
 import invox.model.Product;
-import invox.repository.Repository;
+import invox.repository.ProductRepository;
 
 import java.util.List;
 
 public class ProductService {
 
-    private final Repository<Product> productRepository;
+    private final ProductRepository productRepository;
+    private final int ownerUserId;
     private final AuditService audit = AuditService.getInstance();
 
-    public ProductService(Repository<Product> productRepository) {
+    public ProductService(ProductRepository productRepository, int ownerUserId) {
         this.productRepository = productRepository;
+        this.ownerUserId = ownerUserId;
     }
 
     public Product addProduct(String code, String name, String unit, double price,
                               double vatRate, int stockQuantity, Category category) {
         Product product = new Product(0, code, name, unit, price, vatRate, stockQuantity, category);
+        product.setUserId(ownerUserId);
         Product saved = productRepository.add(product);
         audit.log("ADD_PRODUCT");
         return saved;
@@ -53,7 +56,7 @@ public class ProductService {
     }
 
     public List<Product> listProducts() {
-        return productRepository.findAll();
+        return productRepository.findByUser(ownerUserId);
     }
 
     public Product increaseStock(int productId, int quantity) throws EntityNotFoundException {

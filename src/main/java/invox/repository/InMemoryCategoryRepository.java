@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class InMemoryCategoryRepository implements Repository<Category> {
+public class InMemoryCategoryRepository implements CategoryRepository {
 
     private final Map<Integer, Category> categories = new HashMap<>();
     private int nextId = 1;
@@ -45,5 +45,16 @@ public class InMemoryCategoryRepository implements Repository<Category> {
         if (categories.remove(id) == null) {
             throw new EntityNotFoundException("Category", id);
         }
+    }
+
+    @Override
+    public List<Category> findByUser(int userId) {
+        List<Category> result = new ArrayList<>();
+        for (Category c : categories.values()) {
+            if (c.getUserId() == userId) {
+                result.add(c);
+            }
+        }
+        return result;
     }
 }

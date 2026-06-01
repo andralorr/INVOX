@@ -45,7 +45,7 @@ public class InvoxApp extends Application {
 
     @Override
     public void start(Stage stage) {
-        wireServices();
+        wireAuth();
 
         LoginStage login = new LoginStage(authService);
         login.showAndWait();
@@ -53,6 +53,11 @@ public class InvoxApp extends Application {
         if (currentUser == null) {
             Platform.exit();
             return;
+        }
+
+        wireDataServices(currentUser.getId());
+        if (!USE_DATABASE) {
+            seedDemoCatalogIfEmpty();
         }
 
         productsView = new ProductsView(productService, categoryService);
@@ -83,27 +88,38 @@ public class InvoxApp extends Application {
         return t;
     }
 
-    private static final boolean USE_DATABASE = false;
+    private static final boolean USE_DATABASE = true;
 
-    private void wireServices() {
-        if (USE_DATABASE) {
-            categoryService = new CategoryService(new CategoryJdbcRepository());
-            productService = new ProductService(new ProductJdbcRepository());
-            clientService = new ClientService(new ClientJdbcRepository());
-            invoiceService = new InvoiceService(new InvoiceJdbcRepository(), productService);
-        } else {
-            categoryService = new CategoryService(new InMemoryCategoryRepository());
-            productService = new ProductService(new InMemoryProductRepository());
-            clientService = new ClientService(new InMemoryClientRepository());
-            invoiceService = new InvoiceService(new InMemoryInvoiceRepository(), productService);
-        }
+    private void wireAuth() {
         authService = new AuthService(USE_DATABASE
                 ? new UserJdbcRepository()
                 : new InMemoryUserRepository());
-        seedDemoDataIfEmpty();
+        if (!USE_DATABASE) {
+            try {
+                authService.register("demo", "demo", "Firma Mea SRL", "RO99999999", "J40/999/2024",
+                        "RO12BTRL0000000000123456", "Banca Transilvania", "office@firmamea.ro",
+                        "0799999999", "Str. Principala 1", "Bucuresti", "Bucuresti");
+            } catch (Exception e) {
+                System.err.println("[SEED] user demo: " + e.getMessage());
+            }
+        }
     }
 
-    private void seedDemoDataIfEmpty() {
+    private void wireDataServices(int ownerUserId) {
+        if (USE_DATABASE) {
+            categoryService = new CategoryService(new CategoryJdbcRepository(), ownerUserId);
+            productService = new ProductService(new ProductJdbcRepository(), ownerUserId);
+            clientService = new ClientService(new ClientJdbcRepository(), ownerUserId);
+            invoiceService = new InvoiceService(new InvoiceJdbcRepository(), productService);
+        } else {
+            categoryService = new CategoryService(new InMemoryCategoryRepository(), ownerUserId);
+            productService = new ProductService(new InMemoryProductRepository(), ownerUserId);
+            clientService = new ClientService(new InMemoryClientRepository(), ownerUserId);
+            invoiceService = new InvoiceService(new InMemoryInvoiceRepository(), productService);
+        }
+    }
+
+    private void seedDemoCatalogIfEmpty() {
         try {
             if (!categoryService.listCategories().isEmpty()) {
                 return;
@@ -117,9 +133,6 @@ public class InvoxApp extends Application {
                     "RO49INGB0000999912345678", "ING Bank");
             clientService.addIndividualClient("ion.popescu@gmail.com", "0723456789", "Bd. Unirii 5",
                     "Cluj-Napoca", "Cluj", "Ion", "Popescu", "1900101123456");
-            authService.register("demo", "demo", "Firma Mea SRL", "RO99999999", "J40/999/2024",
-                    "RO12BTRL0000000000123456", "Banca Transilvania", "office@firmamea.ro",
-                    "0799999999", "Str. Principala 1", "Bucuresti", "Bucuresti");
         } catch (Exception e) {
             System.err.println("[SEED] Nu am putut adauga datele de start: " + e.getMessage());
         }
@@ -141,7 +154,7 @@ public class InvoxApp extends Application {
         Menu helpMenu = new Menu("Ajutor");
         MenuItem aboutItem = new MenuItem("Despre");
         aboutItem.setOnAction(e -> Dialogs.info("INVOX",
-                "Aplicatie de facturare si gestiune a stocului."));
+                "Aplicatie de facturare si gestiune a stocului.\nProiect POO II."));
         helpMenu.getItems().add(aboutItem);
 
         return new MenuBar(fileMenu, helpMenu);

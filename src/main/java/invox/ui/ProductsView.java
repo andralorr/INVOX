@@ -100,7 +100,7 @@ public class ProductsView extends BorderPane {
 
         VBox box = new VBox(10, new Label("Produs nou"), grid, buttons);
         box.setPadding(new Insets(12));
-        box.setPrefWidth(340);
+        box.setPrefWidth(400);
         box.getStyleClass().add("card");
         return box;
     }

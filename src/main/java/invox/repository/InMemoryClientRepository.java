@@ -59,6 +59,17 @@ public class InMemoryClientRepository implements ClientRepository {
         return result;
     }
 
+    @Override
+    public List<Client> findByUser(int userId) {
+        List<Client> result = new ArrayList<>();
+        for (Client c : clients.values()) {
+            if (c.getUserId() == userId) {
+                result.add(c);
+            }
+        }
+        return result;
+    }
+
     public List<IndividualClient> findIndividuals() {
         List<IndividualClient> result = new ArrayList<>();
         for (Client c : clients.values()) {

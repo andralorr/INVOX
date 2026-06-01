@@ -22,6 +22,7 @@ C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\model\User.java
 C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\patterns\ClientFactory.java
 C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\patterns\InvoiceBuilder.java
 C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\CategoryJdbcRepository.java
+C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\CategoryRepository.java
 C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\ClientJdbcRepository.java
 C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\ClientRepository.java
 C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\InMemoryCategoryRepository.java
@@ -33,6 +34,7 @@ C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\InvoiceItemJdbcRepos
 C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\InvoiceJdbcRepository.java
 C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\InvoiceRepository.java
 C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\ProductJdbcRepository.java
+C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\ProductRepository.java
 C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\Repository.java
 C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\UserJdbcRepository.java
 C:\Users\ANDRA\Desktop\INVOX\src\main\java\invox\repository\UserRepository.java

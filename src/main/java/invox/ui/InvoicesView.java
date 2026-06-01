@@ -143,7 +143,7 @@ public class InvoicesView extends BorderPane {
         VBox box = new VBox(10, new Label("Factura noua"), grid, addLineBtn,
                 new Label("Linii:"), cartTable, removeLineBtn, issueBtn);
         box.setPadding(new Insets(12));
-        box.setPrefWidth(380);
+        box.setPrefWidth(400);
         box.getStyleClass().add("card");
         return box;
     }

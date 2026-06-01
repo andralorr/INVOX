@@ -112,7 +112,7 @@ public class ClientsView extends BorderPane {
         VBox box = new VBox(10, new Label("Client nou"), grid,
                 new HBox(8, addBtn, detailBtn), deleteBtn);
         box.setPadding(new Insets(12));
-        box.setPrefWidth(360);
+        box.setPrefWidth(440);
         box.getStyleClass().add("card");
         return box;
     }

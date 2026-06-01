@@ -13,18 +13,20 @@ import java.util.List;
 public class ClientService {
 
     private final ClientRepository clientRepository;
+    private final int ownerUserId;
     private final ClientFactory clientFactory = new ClientFactory();
     private final AuditService audit = AuditService.getInstance();
 
-    public ClientService(ClientRepository clientRepository) {
+    public ClientService(ClientRepository clientRepository, int ownerUserId) {
         this.clientRepository = clientRepository;
+        this.ownerUserId = ownerUserId;
     }
 
     private void ensureUniqueEmail(String email) throws DuplicateEntityException {
         if (email == null || email.isBlank()) {
             return;
         }
-        for (Client existing : clientRepository.findAll()) {
+        for (Client existing : clientRepository.findByUser(ownerUserId)) {
             if (email.equalsIgnoreCase(existing.getEmail())) {
                 throw new DuplicateEntityException(
                         "Exista deja un client cu emailul " + email);
@@ -40,6 +42,7 @@ public class ClientService {
         ensureUniqueEmail(email);
         CompanyClient client = clientFactory.createCompany(email, phone, address, city,
                 county, companyName, cui, tradeRegisterNumber, iban, bankName);
+        client.setUserId(ownerUserId);
         clientRepository.add(client);
         audit.log("ADD_COMPANY_CLIENT");
         return client;
@@ -52,6 +55,7 @@ public class ClientService {
         ensureUniqueEmail(email);
         IndividualClient client = clientFactory.createIndividual(email, phone, address,
                 city, county, firstName, lastName, cnp);
+        client.setUserId(ownerUserId);
         clientRepository.add(client);
         audit.log("ADD_INDIVIDUAL_CLIENT");
         return client;
@@ -74,7 +78,26 @@ public class ClientService {
     }
 
     public List<Client> listClients() {
-        return clientRepository.findAll();
+        return clientRepository.findByUser(ownerUserId);
     }
 
+    public List<CompanyClient> listCompanies() {
+        List<CompanyClient> result = new java.util.ArrayList<>();
+        for (Client c : clientRepository.findByUser(ownerUserId)) {
+            if (c instanceof CompanyClient company) {
+                result.add(company);
+            }
+        }
+        return result;
+    }
+
+    public List<IndividualClient> listIndividuals() {
+        List<IndividualClient> result = new java.util.ArrayList<>();
+        for (Client c : clientRepository.findByUser(ownerUserId)) {
+            if (c instanceof IndividualClient individual) {
+                result.add(individual);
+            }
+        }
+        return result;
+    }
 }

@@ -14,7 +14,7 @@ import invox.repository.InMemoryCategoryRepository;
 import invox.repository.InMemoryClientRepository;
 import invox.repository.InMemoryInvoiceRepository;
 import invox.repository.InMemoryProductRepository;
-import invox.repository.Repository;
+import invox.repository.ProductRepository;
 import invox.service.CategoryService;
 import invox.service.ClientService;
 import invox.service.InvoiceService;
@@ -28,10 +28,10 @@ public class Main {
 
     public static void main(String[] args) throws EntityNotFoundException, DuplicateEntityException, InvalidInvoiceStateException {
 
-        CategoryService categoryService = new CategoryService(new InMemoryCategoryRepository());
-        Repository<Product> productRepository = new InMemoryProductRepository();
-        ProductService productService = new ProductService(productRepository);
-        ClientService clientService = new ClientService(new InMemoryClientRepository());
+        CategoryService categoryService = new CategoryService(new InMemoryCategoryRepository(), 1);
+        ProductRepository productRepository = new InMemoryProductRepository();
+        ProductService productService = new ProductService(productRepository, 1);
+        ClientService clientService = new ClientService(new InMemoryClientRepository(), 1);
         InvoiceService invoiceService =
                 new InvoiceService(new InMemoryInvoiceRepository(), productService);
 

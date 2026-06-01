@@ -8,6 +8,7 @@ public abstract class Client implements Identifiable {
     private String address;   // strada, numar
     private String city;      // localitate
     private String county;    // judet
+    private int userId;
 
     protected Client() {}
 
@@ -28,6 +29,10 @@ public abstract class Client implements Identifiable {
     public void setId(int id) {
         this.id = id;
     }
+
+    public int getUserId() { return userId; }
+
+    public void setUserId(int userId) { this.userId = userId; }
 
     public String getEmail() {
         return email;

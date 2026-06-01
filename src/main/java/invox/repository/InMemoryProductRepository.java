@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class InMemoryProductRepository implements Repository<Product> {
+public class InMemoryProductRepository implements ProductRepository {
 
     private final List<Product> products = new ArrayList<>();
     private int nextId = 1;
@@ -48,6 +48,17 @@ public class InMemoryProductRepository implements Repository<Product> {
         if (!removed) {
             throw new EntityNotFoundException("Product", id);
         }
+    }
+
+    @Override
+    public List<Product> findByUser(int userId) {
+        List<Product> result = new ArrayList<>();
+        for (Product p : products) {
+            if (p.getUserId() == userId) {
+                result.add(p);
+            }
+        }
+        return result;
     }
 
     public Optional<Product> findByCode(String code) {

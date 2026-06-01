@@ -10,6 +10,7 @@ public class Product implements Identifiable {
     private double vatRate;       // cota TVA aplicata: 19, 9, 5, 0
     private int stockQuantity;
     private Category category;
+    private int userId;
 
     public Product() {}
 
@@ -33,6 +34,10 @@ public class Product implements Identifiable {
     public void setId(int id) {
         this.id = id;
     }
+
+    public int getUserId() { return userId; }
+
+    public void setUserId(int userId) { this.userId = userId; }
 
     public String getCode() {
         return code;

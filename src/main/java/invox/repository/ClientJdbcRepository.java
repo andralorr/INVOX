@@ -16,24 +16,28 @@ public class ClientJdbcRepository implements ClientRepository {
     private final GenericDao dao = GenericDao.getInstance();
 
     private static final String SELECT =
-            "SELECT id, client_type, email, phone, address, city, county, " +
-            "company_name, cui, trade_register_number, iban, bank_name, " +
-            "first_name, last_name, cnp FROM clients";
+            "SELECT id, user_id, client_type, email, phone, address, city, county, " +
+                    "company_name, cui, trade_register_number, iban, bank_name, " +
+                    "first_name, last_name, cnp FROM clients";
 
     private static final RowMapper<Client> MAPPER = rs -> {
         String type = rs.getString("client_type");
+        Client client;
         if ("COMPANY".equals(type)) {
-            return new CompanyClient(
+            client = new CompanyClient(
                     rs.getInt("id"), rs.getString("email"), rs.getString("phone"),
                     rs.getString("address"), rs.getString("city"), rs.getString("county"),
                     rs.getString("company_name"), rs.getString("cui"),
                     rs.getString("trade_register_number"), rs.getString("iban"),
                     rs.getString("bank_name"));
+        } else {
+            client = new IndividualClient(
+                    rs.getInt("id"), rs.getString("email"), rs.getString("phone"),
+                    rs.getString("address"), rs.getString("city"), rs.getString("county"),
+                    rs.getString("first_name"), rs.getString("last_name"), rs.getString("cnp"));
         }
-        return new IndividualClient(
-                rs.getInt("id"), rs.getString("email"), rs.getString("phone"),
-                rs.getString("address"), rs.getString("city"), rs.getString("county"),
-                rs.getString("first_name"), rs.getString("last_name"), rs.getString("cnp"));
+        client.setUserId(rs.getInt("user_id"));
+        return client;
     };
 
     @Override
@@ -41,18 +45,18 @@ public class ClientJdbcRepository implements ClientRepository {
         int id;
         if (client instanceof CompanyClient c) {
             id = dao.insert(
-                    "INSERT INTO clients(client_type, email, phone, address, city, county, " +
-                    "company_name, cui, trade_register_number, iban, bank_name) " +
-                    "VALUES ('COMPANY', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    c.getEmail(), c.getPhone(), c.getAddress(), c.getCity(), c.getCounty(),
+                    "INSERT INTO clients(user_id, client_type, email, phone, address, city, county, " +
+                            "company_name, cui, trade_register_number, iban, bank_name) " +
+                            "VALUES (?, 'COMPANY', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    c.getUserId(), c.getEmail(), c.getPhone(), c.getAddress(), c.getCity(), c.getCounty(),
                     c.getCompanyName(), c.getCui(), c.getTradeRegisterNumber(),
                     c.getIban(), c.getBankName());
         } else if (client instanceof IndividualClient i) {
             id = dao.insert(
-                    "INSERT INTO clients(client_type, email, phone, address, city, county, " +
-                    "first_name, last_name, cnp) " +
-                    "VALUES ('INDIVIDUAL', ?, ?, ?, ?, ?, ?, ?, ?)",
-                    i.getEmail(), i.getPhone(), i.getAddress(), i.getCity(), i.getCounty(),
+                    "INSERT INTO clients(user_id, client_type, email, phone, address, city, county, " +
+                            "first_name, last_name, cnp) " +
+                            "VALUES (?, 'INDIVIDUAL', ?, ?, ?, ?, ?, ?, ?, ?)",
+                    i.getUserId(), i.getEmail(), i.getPhone(), i.getAddress(), i.getCity(), i.getCounty(),
                     i.getFirstName(), i.getLastName(), i.getCnp());
         } else {
             throw new IllegalArgumentException("Tip de client necunoscut: " + client);
@@ -77,15 +81,15 @@ public class ClientJdbcRepository implements ClientRepository {
         if (client instanceof CompanyClient c) {
             affected = dao.update(
                     "UPDATE clients SET email = ?, phone = ?, address = ?, city = ?, county = ?, " +
-                    "company_name = ?, cui = ?, trade_register_number = ?, iban = ?, bank_name = ? " +
-                    "WHERE id = ?",
+                            "company_name = ?, cui = ?, trade_register_number = ?, iban = ?, bank_name = ? " +
+                            "WHERE id = ?",
                     c.getEmail(), c.getPhone(), c.getAddress(), c.getCity(), c.getCounty(),
                     c.getCompanyName(), c.getCui(), c.getTradeRegisterNumber(),
                     c.getIban(), c.getBankName(), c.getId());
         } else if (client instanceof IndividualClient i) {
             affected = dao.update(
                     "UPDATE clients SET email = ?, phone = ?, address = ?, city = ?, county = ?, " +
-                    "first_name = ?, last_name = ?, cnp = ? WHERE id = ?",
+                            "first_name = ?, last_name = ?, cnp = ? WHERE id = ?",
                     i.getEmail(), i.getPhone(), i.getAddress(), i.getCity(), i.getCounty(),
                     i.getFirstName(), i.getLastName(), i.getCnp(), i.getId());
         } else {
@@ -103,6 +107,11 @@ public class ClientJdbcRepository implements ClientRepository {
         if (affected == 0) {
             throw new EntityNotFoundException("Client", id);
         }
+    }
+
+    @Override
+    public List<Client> findByUser(int userId) {
+        return dao.query(SELECT + " WHERE user_id = ? ORDER BY id", MAPPER, userId);
     }
 
     @Override

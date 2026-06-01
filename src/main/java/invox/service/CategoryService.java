@@ -2,21 +2,24 @@ package invox.service;
 
 import invox.exception.EntityNotFoundException;
 import invox.model.Category;
-import invox.repository.Repository;
+import invox.repository.CategoryRepository;
 
 import java.util.List;
 
 public class CategoryService {
 
-    private final Repository<Category> categoryRepository;
+    private final CategoryRepository categoryRepository;
+    private final int ownerUserId;
     private final AuditService audit = AuditService.getInstance();
 
-    public CategoryService(Repository<Category> categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository, int ownerUserId) {
         this.categoryRepository = categoryRepository;
+        this.ownerUserId = ownerUserId;
     }
 
     public Category addCategory(String name, String description) {
         Category category = new Category(0, name, description);
+        category.setUserId(ownerUserId);
         Category saved = categoryRepository.add(category);
         audit.log("ADD_CATEGORY");
         return saved;
@@ -44,6 +47,6 @@ public class CategoryService {
     }
 
     public List<Category> listCategories() {
-        return categoryRepository.findAll();
+        return categoryRepository.findByUser(ownerUserId);
     }
 }

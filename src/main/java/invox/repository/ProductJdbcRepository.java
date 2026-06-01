@@ -9,14 +9,14 @@ import invox.model.Product;
 import java.util.List;
 import java.util.Optional;
 
-public class ProductJdbcRepository implements Repository<Product> {
+public class ProductJdbcRepository implements ProductRepository {
 
     private final GenericDao dao = GenericDao.getInstance();
 
     private static final String SELECT =
-            "SELECT p.id, p.code, p.name, p.unit, p.price, p.vat_rate, p.stock_quantity, " +
-            "       p.category_id, c.name AS category_name, c.description AS category_description " +
-            "FROM products p LEFT JOIN categories c ON c.id = p.category_id";
+            "SELECT p.id, p.user_id, p.code, p.name, p.unit, p.price, p.vat_rate, p.stock_quantity, " +
+                    "       p.category_id, c.name AS category_name, c.description AS category_description " +
+                    "FROM products p LEFT JOIN categories c ON c.id = p.category_id";
 
     private static final RowMapper<Product> MAPPER = rs -> {
         Category category = null;
@@ -26,7 +26,7 @@ public class ProductJdbcRepository implements Repository<Product> {
                     rs.getString("category_name"),
                     rs.getString("category_description"));
         }
-        return new Product(
+        Product product = new Product(
                 rs.getInt("id"),
                 rs.getString("code"),
                 rs.getString("name"),
@@ -35,6 +35,8 @@ public class ProductJdbcRepository implements Repository<Product> {
                 rs.getDouble("vat_rate"),
                 rs.getInt("stock_quantity"),
                 category);
+        product.setUserId(rs.getInt("user_id"));
+        return product;
     };
 
     @Override
@@ -42,9 +44,9 @@ public class ProductJdbcRepository implements Repository<Product> {
         Integer categoryId = (product.getCategory() != null)
                 ? product.getCategory().getId() : null;
         int id = dao.insert(
-                "INSERT INTO products(code, name, unit, price, vat_rate, stock_quantity, category_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                product.getCode(), product.getName(), product.getUnit(), product.getPrice(),
+                "INSERT INTO products(user_id, code, name, unit, price, vat_rate, stock_quantity, category_id) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                product.getUserId(), product.getCode(), product.getName(), product.getUnit(), product.getPrice(),
                 product.getVatRate(), product.getStockQuantity(), categoryId);
         product.setId(id);
         return product;
@@ -66,7 +68,7 @@ public class ProductJdbcRepository implements Repository<Product> {
                 ? product.getCategory().getId() : null;
         int affected = dao.update(
                 "UPDATE products SET code = ?, name = ?, unit = ?, price = ?, vat_rate = ?, " +
-                "stock_quantity = ?, category_id = ? WHERE id = ?",
+                        "stock_quantity = ?, category_id = ? WHERE id = ?",
                 product.getCode(), product.getName(), product.getUnit(), product.getPrice(),
                 product.getVatRate(), product.getStockQuantity(), categoryId, product.getId());
         if (affected == 0) {
@@ -81,6 +83,11 @@ public class ProductJdbcRepository implements Repository<Product> {
         if (affected == 0) {
             throw new EntityNotFoundException("Product", id);
         }
+    }
+
+    @Override
+    public List<Product> findByUser(int userId) {
+        return dao.query(SELECT + " WHERE p.user_id = ? ORDER BY p.id", MAPPER, userId);
     }
 
     public Optional<Product> findByCode(String code) {

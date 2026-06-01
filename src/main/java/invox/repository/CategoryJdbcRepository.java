@@ -8,20 +8,24 @@ import invox.model.Category;
 import java.util.List;
 import java.util.Optional;
 
-public class CategoryJdbcRepository implements Repository<Category> {
+public class CategoryJdbcRepository implements CategoryRepository {
 
     private final GenericDao dao = GenericDao.getInstance();
 
-    private static final RowMapper<Category> MAPPER = rs -> new Category(
-            rs.getInt("id"),
-            rs.getString("name"),
-            rs.getString("description"));
+    private static final RowMapper<Category> MAPPER = rs -> {
+        Category c = new Category(
+                rs.getInt("id"),
+                rs.getString("name"),
+                rs.getString("description"));
+        c.setUserId(rs.getInt("user_id"));
+        return c;
+    };
 
     @Override
     public Category add(Category category) {
         int id = dao.insert(
-                "INSERT INTO categories(name, description) VALUES (?, ?)",
-                category.getName(), category.getDescription());
+                "INSERT INTO categories(user_id, name, description) VALUES (?, ?, ?)",
+                category.getUserId(), category.getName(), category.getDescription());
         category.setId(id);
         return category;
     }
@@ -29,13 +33,13 @@ public class CategoryJdbcRepository implements Repository<Category> {
     @Override
     public Optional<Category> findById(int id) {
         return dao.queryOne(
-                "SELECT id, name, description FROM categories WHERE id = ?", MAPPER, id);
+                "SELECT id, user_id, name, description FROM categories WHERE id = ?", MAPPER, id);
     }
 
     @Override
     public List<Category> findAll() {
         return dao.query(
-                "SELECT id, name, description FROM categories ORDER BY id", MAPPER);
+                "SELECT id, user_id, name, description FROM categories ORDER BY id", MAPPER);
     }
 
     @Override
@@ -55,5 +59,12 @@ public class CategoryJdbcRepository implements Repository<Category> {
         if (affected == 0) {
             throw new EntityNotFoundException("Category", id);
         }
+    }
+
+    @Override
+    public List<Category> findByUser(int userId) {
+        return dao.query(
+                "SELECT id, user_id, name, description FROM categories WHERE user_id = ? ORDER BY id",
+                MAPPER, userId);
     }
 }

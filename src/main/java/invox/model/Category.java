@@ -5,6 +5,7 @@ public class Category implements Identifiable {
     private int id;
     private String name;
     private String description;
+    private int userId;
 
     public Category() {}
 
@@ -21,6 +22,10 @@ public class Category implements Identifiable {
     public void setId(int id) {
         this.id = id;
     }
+
+    public int getUserId() { return userId; }
+
+    public void setUserId(int userId) { this.userId = userId; }
 
     public String getName() {
         return name;
