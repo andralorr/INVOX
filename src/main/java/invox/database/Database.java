@@ -24,9 +24,20 @@ public class Database {
         } catch (IOException e) {
             System.err.println("[DB] Nu am putut citi db.properties, folosesc valori implicite.");
         }
-        this.url = props.getProperty("db.url", "jdbc:postgresql://localhost:5432/InvoxDb");
-        this.user = props.getProperty("db.user", "USER");
-        this.password = props.getProperty("db.password", "PAROLA_TA");
+        this.url = props.getProperty("db.url");
+        if (url == null || url.isBlank()) {
+            throw new RuntimeException("db.url lipseste din db.properties");
+        }
+
+        this.user = props.getProperty("db.user");
+        if (user == null || user.isBlank()) {
+            throw new RuntimeException("db.user lipseste din db.properties");
+        }
+
+        this.password = props.getProperty("db.password");
+        if (password == null || password.isBlank()) {
+            throw new RuntimeException("db.password lipseste din db.properties");
+        }
     }
 
     public static synchronized Database getInstance() {

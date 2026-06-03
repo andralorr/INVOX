@@ -99,10 +99,6 @@ public class InvoiceService {
                 .orElseThrow(() -> new EntityNotFoundException("Invoice", invoiceId));
     }
 
-    public List<Invoice> listInvoices() {
-        return invoiceRepository.findAll();
-    }
-
     public List<Invoice> listInvoicesByUser(int userId) {
         return invoiceRepository.findByUser(userId);
     }

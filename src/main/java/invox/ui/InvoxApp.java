@@ -154,7 +154,7 @@ public class InvoxApp extends Application {
         Menu helpMenu = new Menu("Ajutor");
         MenuItem aboutItem = new MenuItem("Despre");
         aboutItem.setOnAction(e -> Dialogs.info("INVOX",
-                "Aplicatie de facturare si gestiune a stocului.\nProiect POO II."));
+                "Aplicatie de facturare si gestiune a stocului."));
         helpMenu.getItems().add(aboutItem);
 
         return new MenuBar(fileMenu, helpMenu);

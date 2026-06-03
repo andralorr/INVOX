@@ -17,7 +17,6 @@ invox\patterns\InvoiceBuilder.class
 invox\ui\InvoicesView.class
 invox\ui\LoginStage.class
 invox\model\User.class
-invox\patterns\ClientFactory$ClientType.class
 invox\service\AuthService.class
 invox\exception\InsufficientStockException.class
 invox\model\Invoice.class

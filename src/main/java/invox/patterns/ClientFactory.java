@@ -5,11 +5,6 @@ import invox.model.IndividualClient;
 
 public class ClientFactory {
 
-    public enum ClientType {
-        COMPANY,      // persoana juridica
-        INDIVIDUAL    // persoana fizica
-    }
-
     public CompanyClient createCompany(String email, String phone, String address,
                                        String city, String county, String companyName,
                                        String cui, String tradeRegisterNumber,
